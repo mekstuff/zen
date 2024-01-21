@@ -3,11 +3,11 @@ import {Listr} from 'listr2'
 
 import {FromPublishableNameToPublishablePath, ParseToPublishableName} from '../utils/parsers'
 import {HashPackageJsonFileAsync, ReadExistingPackageJSON, package_json_read_file} from '../utils/zen-core'
-import {AddPublishedPackageToGlobalStoreFile} from '../utils/zen-files'
+import {AddPublishedPackageToGlobalStoreFile, ZENLOCKFILENAME} from '../utils/zen-files'
 import {PackListr} from './pack'
 
+import fs = require('fs')
 import path = require('path')
-
 export default class Publish extends Command {
   static description = 'Publish a package locally.'
   static flags = {
@@ -29,12 +29,17 @@ export default class Publish extends Command {
         // Pack
         {
           task: async (ctx) => {
-            return PackListr(
-              FromPublishableNameToPublishablePath(
-                ParseToPublishableName(ctx.packageJSON.name, ctx.packageJSON.version),
-              ),
-              flags.scripts,
+            const targetPath = FromPublishableNameToPublishablePath(
+              ParseToPublishableName(ctx.packageJSON.name, ctx.packageJSON.version),
             )
+            try {
+              if (fs.existsSync(targetPath)) {
+                fs.rmSync(targetPath, {force: true, recursive: true})
+              }
+            } catch (err) {
+              this.warn(`Could not remove previously published item:\n${err}`)
+            }
+            return PackListr(targetPath, flags.scripts)
           },
           title: 'Packing',
         },
@@ -50,6 +55,32 @@ export default class Publish extends Command {
             })
           },
           title: 'Adding to global store',
+        },
+        // Copy the `zen.lock` file to the published directory, this is need in cases where we plan
+        // to import the packages elsewhere so we can get its dependencies.
+        {
+          task: (ctx, task) => {
+            const lockPath = path.join(process.cwd(), ZENLOCKFILENAME)
+            if (!fs.existsSync(lockPath)) {
+              task.skip('No zen.lock.json exists.')
+              return
+            }
+            const ResolvedDirectory = FromPublishableNameToPublishablePath(
+              ParseToPublishableName(ctx.packageJSON.name, ctx.packageJSON.version),
+            )
+            try {
+              const ZENLOCKFILE_targetDir = path.join(ResolvedDirectory, ZENLOCKFILENAME)
+              if (!fs.existsSync(ZENLOCKFILE_targetDir)) {
+                fs.cpSync(lockPath, ZENLOCKFILE_targetDir, {recursive: true})
+              } else {
+                task.skip(`${ZENLOCKFILENAME} file was already included with publish`)
+              }
+            } catch (err) {
+              task.skip(`Something wen't wrong when copying ${ZENLOCKFILENAME}, view output.`)
+              console.warn(err)
+            }
+          },
+          title: `Copying ${ZENLOCKFILENAME}`,
         },
       ],
       {collectErrors: 'full', concurrent: false},
