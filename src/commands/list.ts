@@ -35,6 +35,7 @@ export default class List extends Command {
       this.error(`No lock file exists: ${lockPath}`)
     }
     const lock = JSON.parse(fs.readFileSync(lockPath, 'utf-8')) as ZenLockFile
+    const zenGlobalFile = LoadZenGlobalStoreFile()
     const rootChildren: Tree[] = []
     for (const pkgn in lock.pkgs) {
       const pkg = lock.pkgs[pkgn]
@@ -68,7 +69,7 @@ export default class List extends Command {
         }`,
       })
 
-      const allVersionsOfPackage = LoadZenGlobalStoreFile().version_tree[pkgn]
+      const allVersionsOfPackage = zenGlobalFile.version_tree[pkgn]
       if (allVersionsOfPackage) {
         _children.push({
           name: allVersionsOfPackage
@@ -83,12 +84,55 @@ export default class List extends Command {
         })
       }
     }
-
     const rootTree: Tree = {
       children: rootChildren,
-      name: '(root)',
+      name: '',
     }
 
-    console.log(logTree.parse(rootTree)) // eslint-disable-line
+    const treeChildren: Tree[] = []
+    for (const treeItemNamesText in lock.tree) {
+      const treeItemNames = treeItemNamesText.split('>>')
+      const treeItemTargetPackage = treeItemNames[treeItemNames.length - 1]
+      const treeItemSignature = lock.tree[treeItemTargetPackage]
+      const treeItemsTextWithTargetHighlighted =
+        chalk.gray(
+          treeItemNames
+            .map((x) => (x === treeItemTargetPackage ? undefined : x))
+            .filter(Boolean)
+            .join('>>') + '>>',
+        ) + treeItemTargetPackage
+      const inStore = zenGlobalFile.store[treeItemTargetPackage]
+      if (!inStore) {
+        treeChildren.push({
+          children: [{name: chalk.red(`${treeItemTargetPackage} was not found in the global store!`)}],
+          name: treeItemsTextWithTargetHighlighted,
+        })
+        continue
+      }
+      treeChildren.push({
+        children: [
+          {
+            name:
+              treeItemSignature === inStore.pack_signature
+                ? chalk.red(inStore.pack_signature)
+                : chalk.green(inStore.pack_signature),
+          },
+        ],
+        name: treeItemsTextWithTargetHighlighted,
+      })
+    }
+    const treeTree: Tree = {
+      children: treeChildren,
+      name: '',
+    }
+
+    const log: Tree = {
+      children: [
+        {children: rootTree.children, name: '(root)'},
+        {children: treeTree.children, name: '(tree)'},
+      ],
+      name: 'zen list',
+    }
+    console.log(logTree.parse(log)) // eslint-disable-line
   }
 }
