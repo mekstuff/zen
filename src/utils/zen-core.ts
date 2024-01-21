@@ -246,10 +246,9 @@ export function ResolveZenPackagesTree(
   const removedItems: {name: string; version_resolve: string}[] = []
   const LOCKFILEPATH = path.join(cwd, ZENLOCKFILENAME)
   const zenRootDirectory = path.relative(cwd, '.zen')
-  const toZenDirectoryImportPackageName = (name: string, version: string, pack_signature: string): string => {
-    // We do not include the version as every version of the package will have a different
-    // pack_signature since the package.json is different.
-    return name.replace(/\//g, '_') + `@${version}` + '--' + pack_signature.replace(/\//g, '_')
+  const toZenDirectoryImportPackageName = (name: string, version: string): string => {
+    // return name.replace(/\//g, '_') + `@${version}` + '--' + pack_signature.replace(/\//g, '_')
+    return name.replace(/\//g, '_') + `@${version}`
   }
   let RequiresPackageManagerInstall: zen_package_tree = []
   let RequiresPackageInjection: zen_package_tree = []
@@ -315,12 +314,7 @@ export function ResolveZenPackagesTree(
       // path does not exist, e.g. not inside `.zen` or `node_modules`, inject
       if (item.import) {
         if (
-          !fs.existsSync(
-            path.join(
-              zenRootDirectory,
-              toZenDirectoryImportPackageName(item.name, item.version_resolve, item.pack_signature),
-            ),
-          )
+          !fs.existsSync(path.join(zenRootDirectory, toZenDirectoryImportPackageName(item.name, item.version_resolve)))
         ) {
           RequiresPackageInjection.push(item)
         }
@@ -343,10 +337,7 @@ export function ResolveZenPackagesTree(
       treeResults.push({
         name: item.name,
         resolvedPackagePath: item.import
-          ? path.join(
-              zenRootDirectory,
-              toZenDirectoryImportPackageName(item.name, item.version_resolve, item.pack_signature),
-            )
+          ? path.join(zenRootDirectory, toZenDirectoryImportPackageName(item.name, item.version_resolve))
           : item.publish_resolve,
       })
     } else {
@@ -372,12 +363,7 @@ export function ResolveZenPackagesTree(
       // path does not exist, e.g. not inside `.zen` or `node_modules`, inject
       if (item.import) {
         if (
-          !fs.existsSync(
-            path.join(
-              zenRootDirectory,
-              toZenDirectoryImportPackageName(item.name, item.version_resolve, item.pack_signature),
-            ),
-          )
+          !fs.existsSync(path.join(zenRootDirectory, toZenDirectoryImportPackageName(item.name, item.version_resolve)))
         ) {
           RequiresPackageInjection.push(item)
         }
@@ -415,7 +401,7 @@ export function ResolveZenPackagesTree(
       // since multiple of the same package can be within the tree, we need to only find a single representation of the package that has "import"
       // to true, if non exist we can safely remove from the directory since no import/traverse_import depends on it in in the `.zen`/import directory.
       const isInTree = Tree.find(
-        (x) => toZenDirectoryImportPackageName(x.name, x.version_resolve, x.pack_signature) === f && x.import === true,
+        (x) => toZenDirectoryImportPackageName(x.name, x.version_resolve) === f && x.import === true,
       )
       if (isInTree === undefined) {
         fs.rmSync(path.join(zenRootDirectory, f), {force: true, recursive: true})
@@ -435,11 +421,7 @@ export function ResolveZenPackagesTree(
   ;[...RequiresPackageInjection, ...RequiresPackageManagerInstall].forEach((target) => {
     // updating the `.zen` directory with all imported packages.
     if (target.import) {
-      const ImportPackageName = toZenDirectoryImportPackageName(
-        target.name,
-        target.version_resolve,
-        target.pack_signature,
-      )
+      const ImportPackageName = toZenDirectoryImportPackageName(target.name, target.version_resolve)
       const resolvedImportPath = path.join(zenRootDirectory, ImportPackageName)
       if (!fs.existsSync(resolvedImportPath)) {
         ZEN_DIRECTORY_COMMIT_MESSAGE.push(`Added ${ImportPackageName}.`)
@@ -450,7 +432,7 @@ export function ResolveZenPackagesTree(
       fs.mkdirSync(resolvedImportPath, {recursive: true})
       fs.cpSync(target.publish_resolve, resolvedImportPath, {force: true, recursive: true})
 
-      if (target.traverse_imports) {
+      if (target.traverse_imports || target.was_traversed) {
         // Update the items package.json to reflect its cwd, since it's now in the `.zen` folder, we have to update each zen import dep to use `../` instead of `./`
         const lockFilePathAtResolvedImport = path.join(resolvedImportPath, ZENLOCKFILENAME)
         if (!fs.existsSync(lockFilePathAtResolvedImport)) {
@@ -482,9 +464,9 @@ export function ResolveZenPackagesTree(
               )
               continue
             }
+
             const updatedPath =
-              localPackagePrefixText +
-              path.join('..', toZenDirectoryImportPackageName(v, inLock.version_resolve, inLock.signature))
+              localPackagePrefixText + path.join('..', toZenDirectoryImportPackageName(v, inLock.version_resolve))
             scopeInJson[v] = updatedPath
             didUpdatePackageJSON = true
           }
