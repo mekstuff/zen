@@ -1,0 +1,7 @@
+{
+  "name": "@zen/test1",
+  "version": "2.5.0",
+  "scripts": {
+    "zen": "node ../../../bin/dev.js"
+  }
+}

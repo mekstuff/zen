@@ -1,0 +1,23 @@
+{
+    "name": "@zen/test2",
+    "version": "1.0.0",
+    "scripts": {
+        "zen": "node ../../../bin/dev.js",
+        "zen-postupdate": "echo 'Hello world!'"
+    },
+    ".zen": {
+        "git": {
+            "auto": true
+        },
+        "dependencies": {
+            "@zen/test2": {
+                "import": true,
+                "traverse_imports": true,
+                "version": "^1.0.0"
+            }
+        }
+    },
+    "dependencies": {
+        "@zen/test2": "file:.zen\\@zen_test2@1.0.0--Y7A7DEgqnjwAwAeKZCBJtuKNzOM=0155daeb6e25f30ee592"
+    }
+}

@@ -1,0 +1,93 @@
+{
+  "author": "mekstuff",
+  "bin": {
+    "zen": "./bin/run.js"
+  },
+  "dependencies": {
+    "@isaacs/string-locale-compare": "^1.1.0",
+    "@listr2/prompt-adapter-enquirer": "^2.0.1",
+    "@npmcli/arborist": "^7.2.2",
+    "@npmcli/run-script": "^7.0.3",
+    "@oclif/core": "^3",
+    "@oclif/plugin-help": "^6",
+    "@oclif/plugin-plugins": "^4",
+    "chalk": "^4.1.2",
+    "console-log-tree": "^1.2.1",
+    "enquirer": "^2.4.1",
+    "json-parse-even-better-errors": "^3.0.1",
+    "listr2": "^8.0.1",
+    "pacote": "^17.0.5",
+    "pluralize": "^8.0.0",
+    "semver": "^7.5.4",
+    "ssri": "^10.0.5",
+    "tar": "^6.2.0"
+  },
+  "description": "oclif example Hello World CLI",
+  "devDependencies": {
+    "@oclif/prettier-config": "^0.2.1",
+    "@oclif/test": "^3",
+    "@types/chai": "^4",
+    "@types/console-log-tree": "^1.2.3",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^18",
+    "@types/pacote": "^11.1.8",
+    "@types/pluralize": "^0.0.33",
+    "@types/semver": "^7.5.6",
+    "@types/tar": "^6.1.10",
+    "chai": "^4",
+    "eslint": "^8.56.0",
+    "eslint-config-oclif": "^5",
+    "eslint-config-oclif-typescript": "^3",
+    "eslint-config-prettier": "^9.1.0",
+    "mocha": "^10",
+    "oclif": "^3.17.2",
+    "shx": "^0.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "/bin",
+    "/dist",
+    "/oclif.manifest.json",
+    "/zen-schema.json"
+  ],
+  "homepage": "https://github.com/mekstuff/zen",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "name": "zen",
+  "oclif": {
+    "bin": "zen",
+    "dirname": "zen",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
+    ],
+    "topicSeparator": " ",
+    "topics": {
+      "hello": {
+        "description": "Say hello to the world and others"
+      }
+    }
+  },
+  "repository": "mekstuff/zen",
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint . --ext .ts",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "posttest": "yarn lint",
+    "prepack": "yarn build && oclif manifest && oclif readme",
+    "prepare": "yarn build",
+    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif readme && git add README.md"
+  },
+  "version": "0.0.0",
+  "bugs": "https://github.com/mekstuff/zen/issues",
+  "keywords": [
+    "oclif"
+  ],
+  "types": "dist/index.d.ts"
+}

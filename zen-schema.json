@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "allOf": [{"$ref": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/package.json"}],
+  "definitions": {
+    "dependency": {
+      "description": "Similar to normal package.json dependencies",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "properties": {
+    "scripts": {
+      "type": "object",
+      "properties": {
+        "zen-postadd": {
+          "type": "string",
+          "description": "This script lifecycle will run AFTER zen has added new package(s) to your package.json dependencies.",
+          "default": "yarn"
+        },
+        "zen-postremove": {
+          "type": "string",
+          "description": "This script lifecycle will run AFTER zen has removed package(s) from your package.json dependencies.",
+          "default": "yarn"
+        },
+        "zen-postupdate": {
+          "type": "string",
+          "description": "This script lifecycle will run AFTER zen has either added or removed package(s) from your package.json dependencies.",
+          "default": "yarn"
+        }
+      }
+    },
+    ".zen": {
+      "type": "object",
+      "description": "Modify zen",
+      "properties": {
+        "dependencies": {
+          "$ref": "#/definitions/dependency"
+        },
+        "devDependencies": {
+          "$ref": "#/definitions/dependency"
+        },
+        "peerDependencies": {
+          "$ref": "#/definitions/dependency"
+        },
+        "optionalDependencies": {
+          "$ref": "#/definitions/dependency"
+        },
+        "git": {
+          "type": "object",
+          "properties": {
+            "auto": {
+              "type": "boolean",
+              "default": false,
+              "description": "Automatically make commits to git whenever zen makes changes"
+            },
+            "packageCommits": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allows commits to the `package.json` file in cases where zen may have changed its contents."
+            },
+            "prefix": {
+              "type": "string",
+              "default": "(zen): ",
+              "description": "The prefix that will be appended at the start of each commit zen makes - defaults to `(zen): `"
+            },
+            "suppressLogs": {
+              "type": "boolean",
+              "default": false,
+              "description": "Hides the commit logs by git in the terminal."
+            },
+            "trimCommitMessages": {
+              "type": "number",
+              "description": "A cutoff length for commit messages."
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "pkgs": {
+    "@zen/test1": {
+      "import": false,
+      "signature": "aYMdF4aeqIo95LFyzoFwy4yUPDM=700d00e85ff4c91d0ac0",
+      "traverse_imports": false,
+      "version": "^2.5.0",
+      "version_resolve": "2.5.0"
+    }
+  },
+  "tree": {},
+  "version": "0"
+}

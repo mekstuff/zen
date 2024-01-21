@@ -1,0 +1,6 @@
+{
+  "$schema": "./zen-schema.json",
+  "scripts": {
+    "zen-postupdate": "echo 'Hello world!'"
+  }
+}

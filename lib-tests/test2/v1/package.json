@@ -1,0 +1,19 @@
+{
+    "name": "@zen/test2",
+    "version": "1.0.0",
+    "scripts": {
+        "zen": "node ../../../bin/dev.js"
+    },
+    ".zen": {
+        "dependencies": {
+            "@zen/test1": {
+                "import": false,
+                "traverse_imports": false,
+                "version": "^2.5.0"
+            }
+        }
+    },
+    "dependencies": {
+        "@zen/test1": "file:C:\\Users\\Lanzo\\.zen-cli\\packages\\@zen\\test1\\2.5.0"
+    }
+}
