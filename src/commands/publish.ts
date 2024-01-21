@@ -32,13 +32,6 @@ export default class Publish extends Command {
             const targetPath = FromPublishableNameToPublishablePath(
               ParseToPublishableName(ctx.packageJSON.name, ctx.packageJSON.version),
             )
-            try {
-              if (fs.existsSync(targetPath)) {
-                fs.rmSync(targetPath, {force: true, recursive: true})
-              }
-            } catch (err) {
-              this.warn(`Could not remove previously published item:\n${err}`)
-            }
             return PackListr(targetPath, flags.scripts)
           },
           title: 'Packing',

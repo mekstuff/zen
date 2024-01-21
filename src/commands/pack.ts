@@ -48,6 +48,14 @@ export function PackListr(out: string, runScripts: boolean) {
           task.output = 'Packing...'
           const Contents = await GetTarballContentsAsync(fileManifest, fileTarball)
           ctx.pack_signature = Contents.shasum.replace('/', '_') // replace any / that can make path a "directory" since we use pack_signature for writing files
+          // Remove any previous items at the directory
+          try {
+            if (fs.existsSync(out)) {
+              fs.rmSync(out, {force: true, recursive: true})
+            }
+          } catch (err) {
+            console.warn(`Could not remove previously packed item item:\n${err}`)
+          }
           Contents.files.forEach((file) => {
             const parsedPath = path.parse(file.path)
             if (parsedPath.dir !== '') {
