@@ -160,6 +160,13 @@ export function GenerateZenPackagesTree(rootPackages: zen_package_tree_dependenc
         true,
       )
       const version_resolve = ParsePackageString(publishName).version ?? ''
+      if (Package.traverse_imports && !Package.import) {
+        console.warn(
+          chalk.yellow(
+            `Did you mean to traverse_imports of ${publishName} and not import it aswell? The traversed imports will not be used as the package was not imported.`,
+          ),
+        )
+      }
       tree.push({
         ...Package,
         pack_signature: packagePublishInfo.pack_signature,
@@ -549,7 +556,7 @@ export function ResolveZenPackagesTree(
     LOCK_FILE_COMMIT_MESSAGE.push(`Removed: ${_names}`)
   }
 
-  fs.writeFileSync(LOCKFILEPATH, JSON.stringify(LOCK_FILE_DATA, undefined, 2))
+  fs.writeFileSync(LOCKFILEPATH, JSON.stringify(LOCK_FILE_DATA, undefined))
   if (LOCK_FILE_COMMIT_MESSAGE.length > 0) {
     AddAndCommitToGit([LOCKFILEPATH], LOCK_FILE_COMMIT_MESSAGE.join('\n'), packageJSON)
   }

@@ -120,7 +120,7 @@ export function LoadZenGlobalStoreFile(): ZenGlobalStoreFile {
 export function SaveZenGlobalStoreFile(Data: ZenGlobalStoreFile) {
   const fileDir = path.join(LoadZenHomeDir(), GLOBAL_STORE_NAME)
   try {
-    fs.writeFileSync(fileDir, JSON.stringify(Data, undefined, 2))
+    fs.writeFileSync(fileDir, JSON.stringify(Data, undefined))
   } catch (err) {
     throw `An error occurred when attempting to load .zen-cli ${GLOBAL_STORE_NAME} file. ${err}`
   }
