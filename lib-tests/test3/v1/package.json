@@ -18,6 +18,6 @@
         }
     },
     "dependencies": {
-        "@zen/test2": "file:.zen\\@zen_test2@1.0.0--Y7A7DEgqnjwAwAeKZCBJtuKNzOM=0155daeb6e25f30ee592"
+        "@zen/test2": "file:.zen\\@zen\\test2@1.0.0"
     }
 }

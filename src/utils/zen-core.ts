@@ -255,7 +255,8 @@ export function ResolveZenPackagesTree(
   const zenRootDirectory = path.relative(cwd, '.zen')
   const toZenDirectoryImportPackageName = (name: string, version: string): string => {
     // return name.replace(/\//g, '_') + `@${version}` + '--' + pack_signature.replace(/\//g, '_')
-    return name.replace(/\//g, '_') + `@${version}`
+    // return name.replace(/\//g, '_') + `@${version}`
+    return name + `@${version}`
   }
   let RequiresPackageManagerInstall: zen_package_tree = []
   let RequiresPackageInjection: zen_package_tree = []
@@ -406,10 +407,40 @@ export function ResolveZenPackagesTree(
     let i = dir.length
     dir.forEach((f) => {
       // since multiple of the same package can be within the tree, we need to only find a single representation of the package that has "import"
-      // to true, if non exist we can safely remove from the directory since no import/traverse_import depends on it in in the `.zen`/import directory.
-      const isInTree = Tree.find(
-        (x) => toZenDirectoryImportPackageName(x.name, x.version_resolve) === f && x.import === true,
-      )
+      // to true, if none exists we can safely remove from the directory since no import/traverse_import depends on it in in the `.zen`/import directory.
+      let isInTree: boolean | undefined
+      if (f.match(/^@/)) {
+        // Orginization, so if: @zen/test1, we need to search for test1 within the @zen scope under the .zen directory to check if it is in tree.
+        const dir = fs.readdirSync(path.join(zenRootDirectory, f))
+        let _i = dir.length
+        for (const x of dir) {
+          const n = path.join(f, x).replace(/\\/g, '/')
+          const find = Tree.find((x) => {
+            return toZenDirectoryImportPackageName(x.name, x.version_resolve) === n && x.import === true
+          })
+            ? true
+            : false
+          if (find) {
+            continue
+          }
+          fs.rmSync(path.join(zenRootDirectory, f, x), {force: true, recursive: true})
+          _i--
+          if (dir.length === 1) {
+            // if the removing item was the last item, remove the empty dir
+            fs.rmSync(path.join(zenRootDirectory, f), {force: true, recursive: true})
+          }
+        }
+        isInTree = _i !== 0
+        if (_i === 0) {
+          i--
+        }
+      } else {
+        isInTree = Tree.find(
+          (x) => toZenDirectoryImportPackageName(x.name, x.version_resolve) === f && x.import === true,
+        )
+          ? true
+          : false
+      }
       if (isInTree === undefined) {
         fs.rmSync(path.join(zenRootDirectory, f), {force: true, recursive: true})
         ZEN_DIRECTORY_COMMIT_MESSAGE.push(`Removed ${f}`)
