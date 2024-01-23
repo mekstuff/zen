@@ -504,7 +504,12 @@ export function ResolveZenPackagesTree(
             }
 
             const updatedPath =
-              localPackagePrefixText + path.join('..', toZenDirectoryImportPackageName(v, inLock.version_resolve))
+              localPackagePrefixText +
+              path.join(
+                '..',
+                path.relative(resolvedImportPath, zenRootDirectory),
+                toZenDirectoryImportPackageName(v, inLock.version_resolve),
+              )
             scopeInJson[v] = updatedPath
             didUpdatePackageJSON = true
           }
