@@ -1,1 +1,1 @@
-{"pkgs":{"@zen/test2":{"import":false,"signature":"Y7A7DEgqnjwAwAeKZCBJtuKNzOM=0155daeb6e25f30ee592","traverse_imports":false,"version":"^1.0.0","version_resolve":"1.0.0"}},"tree":{"@zen/test2@1.0.0>>@zen/test1@2.5.0":"aYMdF4aeqIo95LFyzoFwy4yUPDM=700d00e85ff4c91d0ac0"},"version":"0"}
+{"pkgs":{"@zen/test2":{"import":true,"signature":"Y7A7DEgqnjwAwAeKZCBJtuKNzOM=0155daeb6e25f30ee592","traverse_imports":false,"version":"^1.0.0","version_resolve":"1.0.0"}},"tree":{"@zen/test2@1.0.0>>@zen/test1@2.5.0":"aYMdF4aeqIo95LFyzoFwy4yUPDM=700d00e85ff4c91d0ac0"},"version":"0"}
