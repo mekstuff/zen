@@ -506,7 +506,6 @@ export function ResolveZenPackagesTree(
             const updatedPath =
               localPackagePrefixText +
               path.join(
-                '..',
                 path.relative(resolvedImportPath, zenRootDirectory),
                 toZenDirectoryImportPackageName(v, inLock.version_resolve),
               )
