@@ -12,6 +12,7 @@ export default class Publish extends Command {
   static description = 'Publish a package locally.'
   static flags = {
     scripts: Flags.boolean({
+      allowNo: true,
       default: true,
       description: 'Runs publish lifecycle scripts (no publish related scripts are ran, only pack scripts.)',
     }),
