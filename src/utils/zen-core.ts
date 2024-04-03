@@ -195,7 +195,9 @@ export function GenerateZenPackagesTree(rootPackages: zen_package_tree_dependenc
           _totraverse.push({
             import: Package.traverse_imports, // import will be what traverse_imports is for root package
             name: lockPkgName,
-            traverse_imports: lockPkg.traverse_imports,
+            traverse_imports: Package.traverse_imports ?? lockPkg.traverse_imports, // traverse_imports will be either the Parent's package traverse_imports or our items specified traverse import.
+            // ^^ this means if at root we traverse imports for a package, all descendants/dependencies/sub-dependencies of that package should be imported
+            // ^^ if it's a case where a root package doesn't traverse imports but a sub-package does, that sub-package dependencies will should follow this ^ rule.
             version: lockPkg.version,
           })
         }
