@@ -9,7 +9,7 @@ import {PackListr} from './pack'
 import fs = require('fs')
 import path = require('path')
 export default class Publish extends Command {
-  static description = 'Publish a package locally.'
+  static description = 'Publishes a package locally.'
   static flags = {
     scripts: Flags.boolean({
       allowNo: true,

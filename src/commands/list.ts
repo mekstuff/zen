@@ -21,7 +21,7 @@ type Tree = {
 // import logtree = require('console-log-tree')
 
 export default class List extends Command {
-  static description = 'describe the command here'
+  static description = 'Lists installed zen packages and their dependencies.'
 
   static flags = {
     tree: Flags.boolean({description: '@todo Log the dependency tree'}),

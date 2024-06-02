@@ -72,7 +72,7 @@ export default class Remove extends Command {
   static args = {
     packages: Args.string({description: 'Packages to remove', multiple: true, required: true}),
   }
-  static description = 'describe the command here'
+  static description = 'Removes a zen package from the directory'
   static strict = false
 
   public async run(): Promise<void> {

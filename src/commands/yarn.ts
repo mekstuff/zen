@@ -4,7 +4,7 @@ import {execSync} from 'child_process'
 import path from 'path'
 
 export default class Yarn extends Command {
-  static description = 'describe the command here'
+  static description = 'Runs "yarn install", removes .yarn-integrity so local zen packages are installed correctly.'
 
   public async run(): Promise<void> {
     const yarnIntegrityPath = path.join(process.cwd(), 'node_modules', '.yarn-integrity')

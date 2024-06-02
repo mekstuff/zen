@@ -234,10 +234,17 @@ export default class Add extends Command {
   static examples = ['<%= config.bin %> <%= command.id %>']
   static flags = {
     dev: Flags.boolean({char: 'D', default: false, description: 'Add as a devDependency'}),
-    import: Flags.boolean({default: false, description: 'Import the package'}),
+    import: Flags.boolean({
+      default: false,
+      description:
+        'Import the package ( The package will be added to a .zen directory, meaning you can publish the package without publishing the .zen dependencies )',
+    }),
     optional: Flags.boolean({char: 'O', default: false, description: 'Add as a optionalDependency'}),
     peer: Flags.boolean({char: 'P', default: false, description: 'Add as a peerDependency'}),
-    traverse_imports: Flags.boolean({default: false, description: 'Traverse imports'}),
+    traverse_imports: Flags.boolean({
+      default: false,
+      description: 'Traverse imports ( all dependencies will be imported aswell )',
+    }),
   }
   static strict = false
 
