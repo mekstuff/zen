@@ -13,6 +13,7 @@ import {
 } from '../utils/zen-files'
 
 import semver = require('semver')
+import {UpdateGitRepositoryZenHomeConfig} from '../utils/git'
 
 type Tree = {
   children?: Tree[]
@@ -29,6 +30,8 @@ export default class List extends Command {
 
   public async run(): Promise<void> {
     // const {flags} = await this.parse(List) TODO
+
+    UpdateGitRepositoryZenHomeConfig()
 
     const lockPath = path.join(process.cwd(), ZENLOCKFILENAME)
     if (!fs.existsSync(lockPath)) {

@@ -23,6 +23,14 @@ export type ZenLockFile = {
   version: string
 }
 
+type ZenHomeConfig = {
+  PublishZenToGit?: string
+}
+
+const DefaultZenHomeConfig: ZenHomeConfig = {
+  PublishZenToGit: '@-- add your github repository link here',
+}
+
 type PublishedGlobalStorePackage_Installation = {
   path: string
 }
@@ -36,6 +44,52 @@ type PublishedGlobalStorePackage = {
 }
 
 const GLOBAL_STORE_NAME = 'global.store.json'
+
+/**
+ * Creates the `~/.zen/zen.config.json` file if it doesn't exist.
+ *
+ * @returns The read file from `~/.zen/zen.config.json`
+ */
+export function ReadZenHomeConfig(): ZenHomeConfig {
+  const Directory = path.join(LoadZenHomeDir(), `zen.config.json`)
+  try {
+    if (!fs.existsSync(Directory)) {
+      fs.writeFileSync(Directory, JSON.stringify(DefaultZenHomeConfig, undefined, 2), {encoding: 'utf-8'})
+    }
+  } catch (err) {
+    throw 'An error occurred when attempting to read .zen-cli/zen.config.json file'
+  }
+  return JSON.parse(fs.readFileSync(Directory, {encoding: 'utf-8'}))
+}
+
+/**
+ * Writes to the  `~/.zen/zen.config.json` file
+ */
+export function WriteZenHomeConfig(Data: ZenHomeConfig) {
+  const Directory = path.join(LoadZenHomeDir(), `zen.config.json`)
+  try {
+    if (!fs.existsSync(Directory)) {
+      fs.rmSync(Directory, {recursive: true, force: true})
+    }
+    fs.writeFileSync(Directory, JSON.stringify(Data, undefined, 2), {encoding: 'utf-8'})
+  } catch (err) {
+    throw 'An error occurred when attempting to write .zen-cli/zen.config.json file'
+  }
+}
+/**
+ * Gets a setting within the `~/.zen/zen.config.json`
+ */
+export function GetZenHomeConfigParam(Param: keyof ZenHomeConfig) {
+  return ReadZenHomeConfig()[Param]
+}
+/**
+ * Gets a setting within the `~/.zen/zen.config.json`
+ */
+export function SetZenHomeConfigParam<K extends keyof ZenHomeConfig>(Key: K, Value: ZenHomeConfig[K]) {
+  const r = ReadZenHomeConfig()
+  r[Key] = Value
+  return WriteZenHomeConfig(r)
+}
 
 /**
  * Creates the `~/.zen` directory if it doesn't exist.

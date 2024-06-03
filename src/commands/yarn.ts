@@ -15,7 +15,7 @@ export default class Yarn extends Command {
     const commandToExecute = 'yarn install'
     this.log(`Running "${commandToExecute}"`)
     try {
-      execSync(commandToExecute)
+      execSync(commandToExecute, {stdio: 'inherit'})
     } catch (err) {
       this.warn(`Failed to execute "${commandToExecute}" successfully. => ${err}`)
     }

@@ -1,8 +1,30 @@
 import chalk from 'chalk'
 import {execSync} from 'child_process'
 import path from 'path'
+import fs from 'fs'
 
 import {package_json_read_file} from './zen-core'
+import {GetZenHomeConfigParam, LoadZenHomeDirPackages} from './zen-files'
+
+export function UpdateGitRepositoryZenHomeConfig() {
+  const PublishToGitRepo = GetZenHomeConfigParam('PublishZenToGit')
+  if (typeof PublishToGitRepo !== 'string') {
+    return
+  }
+  if (PublishToGitRepo.match(/^@--/)) {
+    return // contains the headsup default text.
+  }
+  const Packages = LoadZenHomeDirPackages()
+  try {
+    if (!fs.existsSync(path.join(Packages, '.git'))) {
+      execSync('git init', {cwd: Packages, stdio: 'inherit'})
+    }
+  } catch (err) {
+    console.warn(
+      `An error occurred while trying to publish the zen home config packages to your github repo! => ${err}`,
+    )
+  }
+}
 /**
  * Adds the files to git and commits with the message provided.
  *
