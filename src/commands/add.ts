@@ -47,11 +47,13 @@ export const RunAddListr_InstallListrAsync = async (ctx: {packageJSON: package_j
       }
     }
   })
+
   const [resolvedPackages, removedPackages] = ResolveZenPackagesTree(
     GenerateZenPackagesTree(PackagesForTree),
     process.cwd(),
     ctx.packageJSON,
   )
+
   const resolvedPackagesThatChanged: string[] = []
   const localPackagePrefixText = `file:` // the prefix that will be placed at the start of the local path
   resolvedPackages.forEach((pkg) => {
@@ -84,6 +86,7 @@ export const RunAddListr_InstallListrAsync = async (ctx: {packageJSON: package_j
       stdio: 'inherit',
     })
   }
+
   if (removedPackages.length > 0) {
     // run the "zen-postremove" script lifecycle only when previous packages were removed.
     await runScript({
@@ -176,7 +179,6 @@ export function AddListr(
             })
           }
         })
-
         task.title = 'Packages resolved'
       },
       title: `Resolving packages`,
