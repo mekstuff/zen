@@ -227,6 +227,22 @@ export function AddListr(
   ])
 }
 
+const AddCommandFlags = {
+  dev: Flags.boolean({char: 'D', default: false, description: 'Add as a devDependency'}),
+  import: Flags.boolean({
+    default: false,
+    description:
+      'Import the package ( The package will be added to a .zen directory, meaning you can publish the package without publishing the .zen dependencies )',
+  }),
+  optional: Flags.boolean({char: 'O', default: false, description: 'Add as a optionalDependency'}),
+  peer: Flags.boolean({char: 'P', default: false, description: 'Add as a peerDependency'}),
+  traverse_imports: Flags.boolean({
+    default: false,
+    aliases: ['traverse-imports'],
+    description: 'Traverse imports ( all dependencies will be imported aswell )',
+  }),
+} as const
+
 export default class Add extends Command {
   static args = {
     packages: Args.string({description: 'Packages to add', multiple: true, required: true}),
@@ -234,20 +250,7 @@ export default class Add extends Command {
   static description =
     'Adds zen packages to the directory. Please note than zen never installs with a package manager, You have to manually run your package manager after zen, for automation refer to the script lifecycles of zen.'
   static examples = ['<%= config.bin %> <%= command.id %>']
-  static flags = {
-    dev: Flags.boolean({char: 'D', default: false, description: 'Add as a devDependency'}),
-    import: Flags.boolean({
-      default: false,
-      description:
-        'Import the package ( The package will be added to a .zen directory, meaning you can publish the package without publishing the .zen dependencies )',
-    }),
-    optional: Flags.boolean({char: 'O', default: false, description: 'Add as a optionalDependency'}),
-    peer: Flags.boolean({char: 'P', default: false, description: 'Add as a peerDependency'}),
-    traverse_imports: Flags.boolean({
-      default: false,
-      description: 'Traverse imports ( all dependencies will be imported aswell )',
-    }),
-  }
+  static flags = AddCommandFlags
   static strict = false
 
   public async run(): Promise<void> {
@@ -263,3 +266,5 @@ export default class Add extends Command {
       .catch((err) => this.error(err))
   }
 }
+
+export {AddCommandFlags}
