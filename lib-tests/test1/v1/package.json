@@ -2,6 +2,20 @@
   "name": "@zen/test1",
   "version": "1.0.0",
   "scripts": {
-    "zen": "node ../../../bin/dev.js"
+    "zen": "node ../../../bin/dev.js",
+    "prepublishOnly": "zen stage prod",
+    "postpublish": "zen stage dev"
+  },
+  ".zen": {
+    "dependencies": {
+      "@mekstuff-rbxts/core": {
+        "import": true,
+        "traverse_imports": true,
+        "version": "^0.1.5"
+      }
+    }
+  },
+  "dependencies": {
+    "@mekstuff-rbxts/core": "file:.zen\\@mekstuff-rbxts\\core@0.1.5"
   }
 }
