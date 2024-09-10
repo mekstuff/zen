@@ -27,7 +27,10 @@ type AddContext = {
  * @param ctx The context containing packageJSON.
  * @returns void
  */
-export const RunAddListr_InstallListrAsync = async (ctx: {packageJSON: package_json_read_file}) => {
+export const RunAddListr_InstallListrAsync = async (ctx: {
+  packageJSON: package_json_read_file
+  force_update?: boolean
+}) => {
   if (!ctx.packageJSON) {
     throw 'Missing PackageJSON from context'
   }
@@ -52,10 +55,12 @@ export const RunAddListr_InstallListrAsync = async (ctx: {packageJSON: package_j
     GenerateZenPackagesTree(PackagesForTree),
     process.cwd(),
     ctx.packageJSON,
+    ctx.force_update,
   )
 
   const resolvedPackagesThatChanged: string[] = []
   const localPackagePrefixText = `file:` // the prefix that will be placed at the start of the local path
+
   resolvedPackages.forEach((pkg) => {
     const depScope = _PackgesResolvedToScope[pkg.name]
     if (!ctx.packageJSON[depScope]) {

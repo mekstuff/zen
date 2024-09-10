@@ -250,6 +250,7 @@ export function ResolveZenPackagesTree(
   Tree: zen_package_tree,
   cwd: string,
   packageJSON: package_json_read_file,
+  force_update?: boolean,
 ): [{name: string; resolvedPackagePath: string}[], {name: string; version_resolve: string}[]] {
   const treeResults: {name: string; resolvedPackagePath: string}[] = []
   const removedItems: {name: string; version_resolve: string}[] = []
@@ -265,7 +266,9 @@ export function ResolveZenPackagesTree(
   let OLD_LOCK_FILE_DATA: ZenLockFile
   if (fs.existsSync(LOCKFILEPATH)) {
     const r = JSON.parse(fs.readFileSync(LOCKFILEPATH, 'utf-8')) as ZenLockFile
-    if (r.version === ZENLOCKVERSION) {
+    if (r.version === (force_update ? 'force_update' : ZENLOCKVERSION)) {
+      // ^^ version will never be "force_update", so it will... force update... ^^
+
       // if the lock versions are the same, consume the old data
       OLD_LOCK_FILE_DATA = r
     } else {
