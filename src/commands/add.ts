@@ -141,7 +141,14 @@ export function AddListr_InstallListr(ReadExistingPackageJSONAndAddToContext?: b
  */
 export function AddListr(
   packages: string[],
-  options: {dev?: boolean; import?: boolean; optional?: boolean; peer?: boolean; traverse_imports?: boolean},
+  options: {
+    dev?: boolean
+    import?: boolean
+    optional?: boolean
+    peer?: boolean
+    traverse_imports?: boolean
+    symlinked?: boolean
+  },
 ) {
   return new Listr<AddContext>([
     // Setup
@@ -219,6 +226,7 @@ export function AddListr(
             import: options.import,
             traverse_imports: options.traverse_imports,
             version: resolved.versionWithsemverSymbol,
+            symlinked: options.symlinked,
           }
         })
         task.title = 'Updated .zen dependencies'
@@ -246,6 +254,9 @@ const AddCommandFlags = {
     aliases: ['traverse-imports'],
     description: 'Traverse imports ( all dependencies will be imported aswell )',
   }),
+  symlinked: Flags.boolean({
+    default: false,
+  }),
 } as const
 
 export default class Add extends Command {
@@ -262,10 +273,11 @@ export default class Add extends Command {
     const {argv, flags} = await this.parse(Add)
     await AddListr(argv as string[], {
       dev: flags.dev,
-      import: flags.import,
+      import: flags.import || undefined,
       optional: flags.optional,
       peer: flags.peer,
-      traverse_imports: flags.traverse_imports,
+      traverse_imports: flags.traverse_imports || undefined,
+      symlinked: flags.symlinked || undefined,
     })
       .run()
       .catch((err) => this.error(err))

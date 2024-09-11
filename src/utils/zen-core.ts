@@ -17,7 +17,10 @@ import crypto = require('crypto')
 import fs = require('fs')
 import path = require('path')
 
-type package_json_zendependency = Pick<ZenLockFile['pkgs'][string], 'import' | 'traverse_imports' | 'version'>
+type package_json_zendependency = Pick<
+  ZenLockFile['pkgs'][string],
+  'import' | 'traverse_imports' | 'version' | 'symlinked'
+>
 /**
  * A type that represents a `package.json` file with parameters based on what zen needs.
  */
@@ -136,6 +139,7 @@ type zen_package_tree = (zen_package_tree_dependency & {
    * If this package was the result of another package that has "traverse_imports" to true, then this will be throw
    */
   was_traversed?: string
+  symlinked?: boolean
 })[]
 
 /**
@@ -199,6 +203,7 @@ export function GenerateZenPackagesTree(rootPackages: zen_package_tree_dependenc
             // ^^ this means if at root we traverse imports for a package, all descendants/dependencies/sub-dependencies of that package should be imported
             // ^^ if it's a case where a root package doesn't traverse imports but a sub-package does, that sub-package dependencies will should follow this ^ rule.
             version: lockPkg.version,
+            symlinked: Package.symlinked,
           })
         }
         if (_totraverse.length > 0) {
@@ -316,6 +321,11 @@ export function ResolveZenPackagesTree(
         RequiresPackageInjection.push(item)
       }
 
+      // Changed symlink status, require install.
+      if (OLD_ITEM_DATA_FROM_LOCK.symlinked !== item.symlinked) {
+        RequiresPackageManagerInstall.push(item)
+      }
+
       // changed import status, inject
       if (
         OLD_ITEM_DATA_FROM_LOCK.import !== item.import ||
@@ -344,6 +354,7 @@ export function ResolveZenPackagesTree(
         traverse_imports: item.traverse_imports,
         version: item.version,
         version_resolve: item.version_resolve,
+        symlinked: item.symlinked,
       }
 
       // tree results of top level packages are returned, so that they can be placed inside package.json
@@ -462,6 +473,16 @@ export function ResolveZenPackagesTree(
   // but we never write to the package.json file.
 
   ;[...RequiresPackageInjection, ...RequiresPackageManagerInstall].forEach((target) => {
+    // Handling symlinks
+    if (target.symlinked) {
+      if (target.import || target.traverse_imports) {
+        throw `You cannot import a symlink. Both import and symlinked cannot be true. "${target.name}"`
+      }
+      if (true === true) {
+        throw `Symlinked packages are unsupported. Please use import and traverse_imports for now. "${target.name}"`
+      }
+    }
+
     // updating the `.zen` directory with all imported packages.
     if (target.import) {
       const ImportPackageName = toZenDirectoryImportPackageName(target.name, target.version_resolve)

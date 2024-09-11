@@ -17,6 +17,7 @@ export type ZenLockFile = {
       traverse_imports?: boolean
       version: string
       version_resolve: string
+      symlinked?: boolean
     }
   >
   tree: Record<string, string>

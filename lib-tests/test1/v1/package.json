@@ -10,7 +10,6 @@
     "dependencies": {
       "@mekstuff-rbxts/core": {
         "import": true,
-        "traverse_imports": true,
         "version": "^0.1.5"
       }
     }
