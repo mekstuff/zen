@@ -4,6 +4,7 @@ import fs = require('fs')
 import os = require('os')
 import path = require('path')
 import semver = require('semver')
+import {DependecyScope} from './zen-core'
 
 export const ZENLOCKFILENAME = 'zen.lock.json'
 export const ZENLOCKVERSION = '0'
@@ -18,6 +19,7 @@ export type ZenLockFile = {
       version: string
       version_resolve: string
       symlinked?: boolean
+      _depscope: DependecyScope
     }
   >
   tree: Record<string, string>

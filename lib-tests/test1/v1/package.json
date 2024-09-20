@@ -6,15 +6,20 @@
     "prepublishOnly": "zen stage prod",
     "postpublish": "zen stage dev"
   },
+  "dependencies": {},
+  "devDependencies": {},
   ".zen": {
-    "dependencies": {
-      "@mekstuff-rbxts/core": {
-        "import": true,
-        "version": "^0.1.5"
+    "peerDependencies": {
+      "@mekstuff-rbxts/threader": {
+        "version": "^0.1.0"
       }
-    }
+    },
+    "devDependencies": {},
+    "dependencies": {},
+    "optionalDependencies": {}
   },
-  "dependencies": {
-    "@mekstuff-rbxts/core": "file:.zen\\@mekstuff-rbxts\\core@0.1.5"
-  }
+  "peerDependencies": {
+    "@mekstuff-rbxts/threader": "file:C:\\Users\\Olanzo\\.zen-cli\\packages\\@mekstuff-rbxts\\threader\\0.1.0"
+  },
+  "optionalDependencies": {}
 }

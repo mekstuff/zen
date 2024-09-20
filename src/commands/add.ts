@@ -4,6 +4,7 @@ import {Listr} from 'listr2'
 import {AddAndCommitToGit} from '../utils/git'
 import {ParsePackageString, ParseToPublishableName} from '../utils/parsers'
 import {
+  DependecyScopes,
   GenerateZenPackagesTree,
   ReadExistingPackageJSON,
   ResolveZenPackagesTree,
@@ -34,7 +35,7 @@ export const RunAddListr_InstallListrAsync = async (ctx: {
   if (!ctx.packageJSON) {
     throw 'Missing PackageJSON from context'
   }
-  const _DEPSCOPES = ['dependencies', 'devDependencies'] as const
+  const _DEPSCOPES = DependecyScopes
   const _PackgesResolvedToScope: Record<string, (typeof _DEPSCOPES)[number]> = {} // kind of weird but we assign each package to the scope here so after we resolve zen package tree we can know what dependecy scope they belong to.
   const PackagesForTree: zen_package_tree_dependency[] = []
   _DEPSCOPES.forEach((depScope) => {
@@ -45,6 +46,7 @@ export const RunAddListr_InstallListrAsync = async (ctx: {
         _PackgesResolvedToScope[zenPackageName] = depScope
         PackagesForTree.push({
           name: zenPackageName,
+          _depscope: depScope,
           ...zenPackage,
         })
       }
@@ -198,18 +200,33 @@ export function AddListr(
     // update zen deps
     {
       task: (ctx, task) => {
-        const depScope = options.dev ? 'devDependencies' : 'dependencies'
+        const depScopes = ['devDependencies', 'peerDependencies', 'optionalDependencies', 'dependencies'] as const
+        const depScope = options.dev
+          ? 'devDependencies'
+          : options.peer
+          ? 'peerDependencies'
+          : options.optional
+          ? 'optionalDependencies'
+          : 'dependencies'
+
         ctx.resolved_packages_names.forEach((resolved) => {
-          if (options.dev && ctx.packageJSON['.zen']?.dependencies?.[resolved.name]) {
-            // if it is a being added as a devDependency and was previously under "dependencies", then remove it from "dependencies"
-            delete ctx.packageJSON['.zen'].dependencies[resolved.name]
-            delete ctx.packageJSON?.['dependencies']?.[resolved.name]
-          }
-          if (!options.dev && ctx.packageJSON['.zen']?.devDependencies?.[resolved.name]) {
-            // if it is a being added as a dependency and was previously under "devDependencies", then remove it from "devDependencies"
-            delete ctx.packageJSON['.zen'].devDependencies[resolved.name]
-            delete ctx.packageJSON?.['devDependencies']?.[resolved.name]
-          }
+          // remove the entry from other dependencies if stored
+          depScopes.forEach((scope) => {
+            if (scope === depScope) {
+              return
+            }
+            if (!ctx.packageJSON['.zen']) {
+              return
+            }
+            if (!ctx.packageJSON['.zen'][scope]) {
+              return
+            }
+            delete ctx.packageJSON['.zen'][scope]![resolved.name]
+            if (ctx.packageJSON[scope]) {
+              delete ctx.packageJSON[scope]![resolved.name]
+            }
+          })
+
           ctx.packageJSON['.zen'] = ctx.packageJSON['.zen'] || {}
           ctx.packageJSON['.zen'][depScope] = ctx.packageJSON['.zen'][depScope] || {}
 
