@@ -9,17 +9,11 @@
   "dependencies": {},
   "devDependencies": {},
   ".zen": {
-    "peerDependencies": {
-      "@mekstuff-rbxts/threader": {
-        "version": "^0.1.0"
-      }
-    },
+    "peerDependencies": {},
     "devDependencies": {},
     "dependencies": {},
     "optionalDependencies": {}
   },
-  "peerDependencies": {
-    "@mekstuff-rbxts/threader": "file:C:\\Users\\Olanzo\\.zen-cli\\packages\\@mekstuff-rbxts\\threader\\0.1.0"
-  },
+  "peerDependencies": {},
   "optionalDependencies": {}
 }
