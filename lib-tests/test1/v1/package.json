@@ -6,16 +6,14 @@
     "prepublishOnly": "zen stage prod",
     "postpublish": "zen stage dev"
   },
+  "dependencies": {},
+  "devDependencies": {},
   ".zen": {
-    "dependencies": {
-      "@mekstuff-rbxts/core": {
-        "import": true,
-        "traverse_imports": true,
-        "version": "^0.1.5"
-      }
-    }
+    "peerDependencies": {},
+    "devDependencies": {},
+    "dependencies": {},
+    "optionalDependencies": {}
   },
-  "dependencies": {
-    "@mekstuff-rbxts/core": "file:.zen\\@mekstuff-rbxts\\core@0.1.5"
-  }
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

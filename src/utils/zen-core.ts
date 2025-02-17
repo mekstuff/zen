@@ -17,7 +17,10 @@ import crypto = require('crypto')
 import fs = require('fs')
 import path = require('path')
 
-type package_json_zendependency = Pick<ZenLockFile['pkgs'][string], 'import' | 'traverse_imports' | 'version'>
+type package_json_zendependency = Pick<
+  ZenLockFile['pkgs'][string],
+  'import' | 'traverse_imports' | 'version' | 'symlinked'
+>
 /**
  * A type that represents a `package.json` file with parameters based on what zen needs.
  */
@@ -31,6 +34,14 @@ export type package_json_read_file = {
      * Similar to "devDependencies" of the package.json
      */
     devDependencies?: Record<string, package_json_zendependency>
+    /**
+     * Similar to "optionalDependencies" of the package.json
+     */
+    optionalDependencies?: Record<string, package_json_zendependency>
+    /**
+     * Similar to "peerDependencies" of the package.json
+     */
+    peerDependencies?: Record<string, package_json_zendependency>
     git?: {
       /**
        * Automatically make commits to git whenever zen makes changes
@@ -53,14 +64,6 @@ export type package_json_read_file = {
        */
       trimCommitMessages?: number
     }
-    /**
-     * Similar to "optionalDependencies" of the package.json
-     */
-    optionalDependencies?: Record<string, package_json_zendependency>
-    /**
-     * Similar to "peerDependencies" of the package.json
-     */
-    peerDependencies?: Record<string, package_json_zendependency>
   }
   dependencies?: Record<string, string>
   description: string
@@ -127,7 +130,10 @@ export function WriteExistingPackageJSON(options: {ReadJSON: package_json_read_f
   }
 }
 
-export type zen_package_tree_dependency = package_json_zendependency & {name: string}
+export const DependecyScopes = ['devDependencies', 'peerDependencies', 'optionalDependencies', 'dependencies'] as const
+export type DependecyScope = 'devDependencies' | 'peerDependencies' | 'optionalDependencies' | 'dependencies'
+
+export type zen_package_tree_dependency = package_json_zendependency & {name: string; _depscope: DependecyScope}
 type zen_package_tree = (zen_package_tree_dependency & {
   pack_signature: string
   publish_resolve: string
@@ -136,6 +142,7 @@ type zen_package_tree = (zen_package_tree_dependency & {
    * If this package was the result of another package that has "traverse_imports" to true, then this will be throw
    */
   was_traversed?: string
+  symlinked?: boolean
 })[]
 
 /**
@@ -169,6 +176,7 @@ export function GenerateZenPackagesTree(rootPackages: zen_package_tree_dependenc
       }
       tree.push({
         ...Package,
+
         pack_signature: packagePublishInfo.pack_signature,
         publish_resolve: packagePublishInfo.resolve,
         version_resolve: version_resolve,
@@ -199,6 +207,8 @@ export function GenerateZenPackagesTree(rootPackages: zen_package_tree_dependenc
             // ^^ this means if at root we traverse imports for a package, all descendants/dependencies/sub-dependencies of that package should be imported
             // ^^ if it's a case where a root package doesn't traverse imports but a sub-package does, that sub-package dependencies will should follow this ^ rule.
             version: lockPkg.version,
+            symlinked: Package.symlinked,
+            _depscope: Package._depscope,
           })
         }
         if (_totraverse.length > 0) {
@@ -316,12 +326,22 @@ export function ResolveZenPackagesTree(
         RequiresPackageInjection.push(item)
       }
 
+      // Changed symlink status, require install.
+      if (OLD_ITEM_DATA_FROM_LOCK.symlinked !== item.symlinked) {
+        RequiresPackageManagerInstall.push(item)
+      }
+
       // changed import status, inject
       if (
         OLD_ITEM_DATA_FROM_LOCK.import !== item.import ||
         OLD_ITEM_DATA_FROM_LOCK.traverse_imports !== item.traverse_imports
       ) {
         RequiresPackageInjection.push(item)
+      }
+
+      // dependency scope changed, from "dependencies" to "devDependencies"
+      if (OLD_ITEM_DATA_FROM_LOCK._depscope !== item._depscope) {
+        RequiresPackageManagerInstall.push(item)
       }
 
       // path does not exist, e.g. not inside `.zen` or `node_modules`, inject
@@ -344,6 +364,8 @@ export function ResolveZenPackagesTree(
         traverse_imports: item.traverse_imports,
         version: item.version,
         version_resolve: item.version_resolve,
+        symlinked: item.symlinked,
+        _depscope: item._depscope,
       }
 
       // tree results of top level packages are returned, so that they can be placed inside package.json
@@ -400,7 +422,7 @@ export function ResolveZenPackagesTree(
   RequiresPackageInjection = FilterRequireDuplicates(RequiresPackageInjection)
   RequiresPackageManagerInstall = FilterRequireDuplicates(RequiresPackageManagerInstall)
 
-  //Anything that requires install, remove if from requires injection.
+  //Anything that requires install, remove it from requires injection.
   RequiresPackageInjection = RequiresPackageInjection.filter((x) => {
     return RequiresPackageManagerInstall.findIndex((tx) => tx.name === x.name && tx.name === x.name) === -1
   })
@@ -459,9 +481,18 @@ export function ResolveZenPackagesTree(
 
   // Here is where we control creating imports, removing imports, and returning what needs to be added to the package.json
   // we also remove what doesn't need to be in the package.json file here aswell (only for package dependencies not zen dependencies as that is done before this call with remove command)
-  // but we never write to the package.json file.
 
   ;[...RequiresPackageInjection, ...RequiresPackageManagerInstall].forEach((target) => {
+    // Handling symlinks
+    if (target.symlinked) {
+      if (target.import || target.traverse_imports) {
+        throw `You cannot import a symlink. Both import and symlinked cannot be true. "${target.name}"`
+      }
+      if (true === true) {
+        throw `Symlinked packages are unsupported. Please use import and traverse_imports for now. "${target.name}"`
+      }
+    }
+
     // updating the `.zen` directory with all imported packages.
     if (target.import) {
       const ImportPackageName = toZenDirectoryImportPackageName(target.name, target.version_resolve)
@@ -487,7 +518,7 @@ export function ResolveZenPackagesTree(
         let didUpdatePackageJSON = false
         const _handletraversedDepImportsUpdate = (
           items: NonNullable<package_json_read_file['.zen']>['dependencies'],
-          scope: 'dependencies',
+          scope: 'dependencies' | 'devDependencies' | 'peerDependencies' | 'optionalDependencies',
         ) => {
           if (!items) {
             return
@@ -519,6 +550,9 @@ export function ResolveZenPackagesTree(
           }
         }
         _handletraversedDepImportsUpdate(_pkgjson['.zen']?.dependencies, 'dependencies')
+        _handletraversedDepImportsUpdate(_pkgjson['.zen']?.devDependencies, 'devDependencies')
+        _handletraversedDepImportsUpdate(_pkgjson['.zen']?.peerDependencies, 'peerDependencies')
+        _handletraversedDepImportsUpdate(_pkgjson['.zen']?.optionalDependencies, 'optionalDependencies')
         if (didUpdatePackageJSON) {
           WriteExistingPackageJSON({ReadJSON: _pkgjson, cwd: resolvedImportPath})
         }
