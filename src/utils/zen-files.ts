@@ -1,10 +1,10 @@
 import {FromPublishableNameToPublishablePath, ParseToPublishableName} from './parsers'
+import {DependecyScope} from './zen-core'
 
 import fs = require('fs')
 import os = require('os')
 import path = require('path')
 import semver = require('semver')
-import {DependecyScope} from './zen-core'
 
 export const ZENLOCKFILENAME = 'zen.lock.json'
 export const ZENLOCKVERSION = '0'
@@ -13,13 +13,13 @@ export type ZenLockFile = {
   pkgs: Record<
     string,
     {
+      _depscope: DependecyScope
       import?: boolean
       signature: string
+      symlinked?: boolean
       traverse_imports?: boolean
       version: string
       version_resolve: string
-      symlinked?: boolean
-      _depscope: DependecyScope
     }
   >
   tree: Record<string, string>
@@ -42,11 +42,15 @@ type PublishedGlobalStorePackage_Installation = {
  */
 type PublishedGlobalStorePackage = {
   installations: PublishedGlobalStorePackage_Installation[]
+  origin: string
   pack_signature: string
   resolve: string
 }
 
 const GLOBAL_STORE_NAME = 'global.store.json'
+export function GetZenGlobalStoreFilePath(): string {
+  return path.join(LoadZenHomeDir(), GLOBAL_STORE_NAME)
+}
 
 /**
  * Creates the `~/.zen/zen.config.json` file if it doesn't exist.
@@ -67,12 +71,15 @@ export function ReadZenHomeConfig(): ZenHomeConfig {
 
 /**
  * Writes to the  `~/.zen/zen.config.json` file
+ *
+ * @param Data ZenHomeConfig
+ * @returns void
  */
 export function WriteZenHomeConfig(Data: ZenHomeConfig) {
   const Directory = path.join(LoadZenHomeDir(), `zen.config.json`)
   try {
     if (!fs.existsSync(Directory)) {
-      fs.rmSync(Directory, {recursive: true, force: true})
+      fs.rmSync(Directory, {force: true, recursive: true})
     }
     fs.writeFileSync(Directory, JSON.stringify(Data, undefined, 2), {encoding: 'utf-8'})
   } catch (err) {
@@ -81,12 +88,20 @@ export function WriteZenHomeConfig(Data: ZenHomeConfig) {
 }
 /**
  * Gets a setting within the `~/.zen/zen.config.json`
+ *
+ * @param Param keyof ZenHomeConfig
+ * @returns string | undefined
  */
 export function GetZenHomeConfigParam(Param: keyof ZenHomeConfig) {
   return ReadZenHomeConfig()[Param]
 }
 /**
  * Gets a setting within the `~/.zen/zen.config.json`
+ *
+ * @param Key keyof ZenHomeConfig
+ * @param Value ZenHomeConfig[K]
+ *
+ * @returns void
  */
 export function SetZenHomeConfigParam<K extends keyof ZenHomeConfig>(Key: K, Value: ZenHomeConfig[K]) {
   const r = ReadZenHomeConfig()
@@ -131,7 +146,7 @@ export function LoadZenHomeDirPackages(): string {
 /**
  * type of what the `~/.zen/[GLOBAL_STORE_NAME]` contains.
  */
-type ZenGlobalStoreFile = {
+export type ZenGlobalStoreFile = {
   store: Record<string, PublishedGlobalStorePackage>
   /**
    * Stores the versions of packages in a record.
@@ -151,20 +166,19 @@ type ZenGlobalStoreFile = {
  * @returns {ZenGlobalStoreFile} The read ZenGlobalStore File
  */
 export function LoadZenGlobalStoreFile(): ZenGlobalStoreFile {
-  const fileDir = path.join(LoadZenHomeDir(), GLOBAL_STORE_NAME)
   try {
-    if (!fs.existsSync(fileDir)) {
+    if (!fs.existsSync(GetZenGlobalStoreFilePath())) {
       const _v: ZenGlobalStoreFile = {
         store: {},
         version_tree: {},
       }
-      fs.writeFileSync(fileDir, JSON.stringify(_v, undefined, 2))
+      fs.writeFileSync(GetZenGlobalStoreFilePath(), JSON.stringify(_v, undefined, 2))
       return _v
     }
   } catch (err) {
     throw `An error occurred when attempting to load .zen-cli ${GLOBAL_STORE_NAME} file. ${err}`
   }
-  return JSON.parse(fs.readFileSync(fileDir, 'utf-8')) as ZenGlobalStoreFile
+  return JSON.parse(fs.readFileSync(GetZenGlobalStoreFilePath(), 'utf-8')) as ZenGlobalStoreFile
 }
 
 /**
@@ -191,6 +205,7 @@ export function SaveZenGlobalStoreFile(Data: ZenGlobalStoreFile) {
  */
 export function AddPublishedPackageToGlobalStoreFile(packageData: {
   name: string
+  origin: string
   pack_signature: string
   version: string
 }) {
@@ -208,6 +223,7 @@ export function AddPublishedPackageToGlobalStoreFile(packageData: {
   const publishResolvePath = FromPublishableNameToPublishablePath(publishName)
   if (PreviouslyPublishedData) {
     // preserve previous data and only update what's needed.
+    PreviouslyPublishedData.origin = packageData.origin
     PreviouslyPublishedData.pack_signature = packageData.pack_signature
     PreviouslyPublishedData.resolve = publishResolvePath
     // remove any invalid installation paths
@@ -222,6 +238,7 @@ export function AddPublishedPackageToGlobalStoreFile(packageData: {
     [
       (GlobalStore.store[publishName] = {
         installations: [],
+        origin: packageData.origin,
         pack_signature: packageData.pack_signature,
         resolve: publishResolvePath,
       }),

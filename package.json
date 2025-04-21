@@ -1,8 +1,49 @@
 {
+  "name": "@mekstuff/zen",
   "author": "mekstuff",
+  "description": "Publish and install packages locally on your device for a quicker development process.",
+  "version": "1.0.0",
+  "homepage": "https://github.com/mekstuff/zen",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": "mekstuff/zen",
+  "bugs": "https://github.com/mekstuff/zen/issues",
+  "types": "dist/index.d.ts",
   "bin": {
     "zen": "./bin/run.js"
   },
+  "files": [
+    "/bin",
+    "/dist",
+    "/oclif.manifest.json",
+    "/zen-schema.json"
+  ],
+  "scripts": {
+    "build": "shx rm -rf dist && tsc -b",
+    "lint": "eslint . --ext .ts",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "posttest": "yarn lint",
+    "prepack": "yarn build && oclif manifest && oclif readme",
+    "prepare": "yarn build",
+    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
+    "version": "oclif readme && git add README.md"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "oclif": {
+    "bin": "zen",
+    "dirname": "zen",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins"
+    ],
+    "topicSeparator": " "
+  },
+  "keywords": [
+    "oclif"
+  ],
   "dependencies": {
     "@isaacs/string-locale-compare": "^1.1.0",
     "@listr2/prompt-adapter-enquirer": "^2.0.1",
@@ -16,14 +57,15 @@
     "enquirer": "^2.4.1",
     "json-parse-even-better-errors": "^3.0.1",
     "listr2": "^8.0.1",
+    "ora": "^8.2.0",
     "pacote": "^17.0.5",
     "pluralize": "^8.0.0",
     "preferred-pm": "^4.0.0",
     "semver": "^7.5.4",
     "ssri": "^10.0.5",
-    "tar": "^6.2.0"
+    "tar": "^6.2.0",
+    "yesno": "^0.4.0"
   },
-  "description": "oclif example Hello World CLI",
   "devDependencies": {
     "@oclif/prettier-config": "^0.2.1",
     "@oclif/test": "^3",
@@ -38,48 +80,8 @@
     "eslint-config-oclif-typescript": "^3",
     "eslint-config-prettier": "^9.1.0",
     "oclif": "^3.17.2",
-    "shx": "^0.3.3",
+    "shx": "^0.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "files": [
-    "/bin",
-    "/dist",
-    "/oclif.manifest.json",
-    "/zen-schema.json"
-  ],
-  "homepage": "https://github.com/mekstuff/zen",
-  "license": "MIT",
-  "main": "dist/index.js",
-  "name": "zen",
-  "oclif": {
-    "bin": "zen",
-    "dirname": "zen",
-    "commands": "./dist/commands",
-    "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
-    ],
-    "topicSeparator": " "
-  },
-  "repository": "mekstuff/zen",
-  "scripts": {
-    "build": "shx rm -rf dist && tsc -b",
-    "lint": "eslint . --ext .ts",
-    "postpack": "shx rm -f oclif.manifest.json",
-    "posttest": "yarn lint",
-    "prepack": "yarn build && oclif manifest && oclif readme",
-    "prepare": "yarn build",
-    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md"
-  },
-  "version": "1.0.0",
-  "bugs": "https://github.com/mekstuff/zen/issues",
-  "keywords": [
-    "oclif"
-  ],
-  "types": "dist/index.d.ts"
+  }
 }

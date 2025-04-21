@@ -1,7 +1,12 @@
 import {Args, Command, Flags} from '@oclif/core'
+
 import {AddCommandFlags, AddListr} from './add'
 
 export default class Import extends Command {
+  static args = {
+    packages: Args.string({description: 'Packages to import', multiple: true, required: true}),
+  }
+
   static description =
     'Adds a package with the --import flag passed. Also provides a shorten "T" flag for traversing imports'
 
@@ -13,10 +18,6 @@ export default class Import extends Command {
       char: 'T',
       ...AddCommandFlags.traverse_imports,
     }),
-  }
-
-  static args = {
-    packages: Args.string({description: 'Packages to import', multiple: true, required: true}),
   }
 
   public async run(): Promise<void> {

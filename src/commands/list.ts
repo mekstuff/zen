@@ -4,17 +4,16 @@ import logTree from 'console-log-tree'
 import fs from 'fs'
 import path from 'path'
 
+import {UpdateGitRepositoryZenHomeConfig} from '../utils/git'
 import {
   GetCompatiableVersionsOfPackageFromGlobalStoreFile,
   GetPublishedPackageFromGlobalStoreFile,
   LoadZenGlobalStoreFile,
   ZENLOCKFILENAME,
-  ZenLockFile,
 } from '../utils/zen-files'
+import {ReadZenLockFile} from '../utils/zen-lock'
 
 import semver = require('semver')
-import {UpdateGitRepositoryZenHomeConfig} from '../utils/git'
-import {ReadZenLockFile} from '../utils/zen-lock'
 
 type Tree = {
   children?: Tree[]

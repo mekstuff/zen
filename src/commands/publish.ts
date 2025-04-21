@@ -44,6 +44,7 @@ export default class Publish extends Command {
             ctx.pack_signature = ctx.pack_signature + packageJsonHash.substring(0, packageJsonHash.length / 2)
             AddPublishedPackageToGlobalStoreFile({
               name: ctx.packageJSON.name,
+              origin: process.cwd(),
               pack_signature: ctx.pack_signature,
               version: ctx.packageJSON.version,
             })

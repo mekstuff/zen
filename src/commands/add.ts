@@ -29,8 +29,8 @@ type AddContext = {
  * @returns void
  */
 export const RunAddListr_InstallListrAsync = async (ctx: {
-  packageJSON: package_json_read_file
   force_update?: boolean
+  packageJSON: package_json_read_file
 }) => {
   if (!ctx.packageJSON) {
     throw 'Missing PackageJSON from context'
@@ -45,8 +45,8 @@ export const RunAddListr_InstallListrAsync = async (ctx: {
         const zenPackage = zenHas[zenPackageName]
         _PackgesResolvedToScope[zenPackageName] = depScope
         PackagesForTree.push({
-          name: zenPackageName,
           _depscope: depScope,
+          name: zenPackageName,
           ...zenPackage,
         })
       }
@@ -148,8 +148,8 @@ export function AddListr(
     import?: boolean
     optional?: boolean
     peer?: boolean
-    traverse_imports?: boolean
     symlinked?: boolean
+    traverse_imports?: boolean
   },
 ) {
   return new Listr<AddContext>([
@@ -241,9 +241,9 @@ export function AddListr(
 
           ctx.packageJSON['.zen'][depScope]![resolved.name] = {
             import: options.import,
+            symlinked: options.symlinked,
             traverse_imports: options.traverse_imports,
             version: resolved.versionWithsemverSymbol,
-            symlinked: options.symlinked,
           }
         })
         task.title = 'Updated .zen dependencies'
@@ -266,13 +266,13 @@ const AddCommandFlags = {
   }),
   optional: Flags.boolean({char: 'O', default: false, description: 'Add as a optionalDependency'}),
   peer: Flags.boolean({char: 'P', default: false, description: 'Add as a peerDependency'}),
-  traverse_imports: Flags.boolean({
-    default: false,
-    aliases: ['traverse-imports'],
-    description: 'Traverse imports ( all dependencies will be imported aswell )',
-  }),
   symlinked: Flags.boolean({
     default: false,
+  }),
+  traverse_imports: Flags.boolean({
+    aliases: ['traverse-imports'],
+    default: false,
+    description: 'Traverse imports ( all dependencies will be imported aswell )',
   }),
 } as const
 
@@ -293,8 +293,8 @@ export default class Add extends Command {
       import: flags.import || undefined,
       optional: flags.optional,
       peer: flags.peer,
-      traverse_imports: flags.traverse_imports || undefined,
       symlinked: flags.symlinked || undefined,
+      traverse_imports: flags.traverse_imports || undefined,
     })
       .run()
       .catch((err) => this.error(err))

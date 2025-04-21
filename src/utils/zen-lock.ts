@@ -1,9 +1,10 @@
 import fs from 'fs'
 import path from 'path'
-import {ZenLockFile, ZENLOCKFILENAME} from './zen-files'
+
+import {ZENLOCKFILENAME, ZenLockFile} from './zen-files'
 
 export function ReadZenLockFile(cwd: string = process.cwd()): ZenLockFile {
-  const lockPath = path.join(process.cwd(), ZENLOCKFILENAME)
+  const lockPath = path.join(cwd, ZENLOCKFILENAME)
   if (!fs.existsSync(lockPath)) {
     throw Error(`No lock file exists: ${lockPath}`)
   }

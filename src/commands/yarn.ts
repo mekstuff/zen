@@ -1,6 +1,6 @@
-import fs from 'fs'
-import {Args, Command, Flags} from '@oclif/core'
+import {Command} from '@oclif/core'
 import {execSync} from 'child_process'
+import fs from 'fs'
 import path from 'path'
 
 export default class Yarn extends Command {

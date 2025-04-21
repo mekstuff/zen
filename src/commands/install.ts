@@ -1,23 +1,23 @@
+import {Args, Command} from '@oclif/core'
+import {execSync} from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import preferredPM from 'preferred-pm'
-import {Args, Command} from '@oclif/core'
-import {execSync} from 'child_process'
 
 const installers: Record<string, string> = {
   bun: 'bun install',
   npm: 'npm install',
-  yarn: 'yarn install',
   pnpm: 'pnpm install',
+  yarn: 'yarn install',
 }
 
 export default class Install extends Command {
+  static args = {
+    packageManager: Args.string({description: 'target package manager', options: ['yarn', 'npm', 'pnpm', 'bun']}),
+  }
+
   static description =
     'Run install using a specified package manager. If no package manager is specified, zen will search for any lock file within the directory and assume that package manager.'
-
-  static args = {
-    packageManager: Args.string({options: ['yarn', 'npm', 'pnpm', 'bun'], description: 'target package manager'}),
-  }
 
   public async run(): Promise<void> {
     const {args} = await this.parse(Install)

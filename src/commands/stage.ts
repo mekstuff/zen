@@ -1,23 +1,24 @@
-import path from 'path'
 import {Args, Command, Flags} from '@oclif/core'
-import {ReadExistingPackageJSON, WriteExistingPackageJSON} from '../utils/zen-core'
+import path from 'path'
+
 import {AddAndCommitToGit} from '../utils/git'
-import {RunAddListr_InstallListrAsync} from './add'
+import {ReadExistingPackageJSON, WriteExistingPackageJSON} from '../utils/zen-core'
 import {ReadZenLockFile} from '../utils/zen-lock'
+import {RunAddListr_InstallListrAsync} from './add'
 
 export default class Stage extends Command {
+  static args = {
+    stage: Args.string({
+      description:
+        'The current "stage", production | development. In production mode, all zen packages in your package.json will be converted to using their listed version aka your production ready counterparts.\n\ne.g. "@mekstuff/package: file:path/to/file" will become "@mekstuff/package: x.x.x"\n\nExpected to be used in your "prePublishOnly" and "postpublish" script lifecycle.',
+      options: ['production', 'development', 'prod', 'dev'],
+      required: true,
+    }),
+  }
+
   static description = 'describe the command here'
 
   static examples = ['<%= config.bin %> <%= command.id %>']
-
-  static args = {
-    stage: Args.string({
-      required: true,
-      options: ['production', 'development', 'prod', 'dev'],
-      description:
-        'The current "stage", production | development. In production mode, all zen packages in your package.json will be converted to using their listed version aka your production ready counterparts.\n\ne.g. "@mekstuff/package: file:path/to/file" will become "@mekstuff/package: x.x.x"\n\nExpected to be used in your "prePublishOnly" and "postpublish" script lifecycle.',
-    }),
-  }
 
   static flags = {
     exact_version: Flags.boolean({
@@ -96,8 +97,8 @@ export default class Stage extends Command {
       } else {
         this.log('Staging for Development 📦')
         RunAddListr_InstallListrAsync({
-          packageJSON: pkgJSON,
           force_update: true,
+          packageJSON: pkgJSON,
         })
         this.log('Package is Development ready 🛠️')
       }
