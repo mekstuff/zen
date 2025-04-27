@@ -1,6 +1,6 @@
 {
   "name": "@zen/test1",
-  "version": "1.0.0",
+  "version": "0.1.0-beta",
   "scripts": {
     "zen": "node ../../../bin/dev.js",
     "prepublishOnly": "zen stage prod",
