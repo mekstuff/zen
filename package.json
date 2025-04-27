@@ -2,7 +2,7 @@
   "name": "@mekstuff/zen",
   "author": "mekstuff",
   "description": "Publish and install packages locally on your device for a quicker development process.",
-  "version": "1.0.0",
+  "version": "0.1.0-beta",
   "homepage": "https://github.com/mekstuff/zen",
   "license": "MIT",
   "main": "dist/index.js",

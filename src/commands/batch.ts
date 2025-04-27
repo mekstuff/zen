@@ -7,6 +7,7 @@ export default class Batch extends Command {
   static args = {
     command: Args.string({description: 'The command to be executed.', required: true}),
   }
+
   static description = 'Executes the given command in a loop within the current working directory.'
 
   static flags = {

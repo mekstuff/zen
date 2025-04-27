@@ -19,7 +19,6 @@ type Tree = {
   children?: Tree[]
   name: string
 }
-// import logtree = require('console-log-tree')
 
 export default class List extends Command {
   static description = 'Lists installed zen packages and their dependencies.'

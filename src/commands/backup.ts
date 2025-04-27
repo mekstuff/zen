@@ -13,8 +13,6 @@ export default class Backup extends Command {
   static description =
     'Creates a copy of the current global store inside your current working directory which you can revert to by using "zen restore <FILE>"'
 
-  static examples = ['<%= config.bin %> <%= command.id %>']
-
   public async run(): Promise<void> {
     const {args} = await this.parse(Backup)
 

@@ -4,7 +4,7 @@ import {AddCommandFlags, AddListr} from './add'
 
 export default class Import extends Command {
   static args = {
-    packages: Args.string({description: 'Packages to import', multiple: true, required: true}),
+    packages: Args.string({description: 'Packages to import', required: true}),
   }
 
   static description =
@@ -19,6 +19,7 @@ export default class Import extends Command {
       ...AddCommandFlags.traverse_imports,
     }),
   }
+  static strict = false
 
   public async run(): Promise<void> {
     const {argv, flags} = await this.parse(Import)

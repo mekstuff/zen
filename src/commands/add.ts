@@ -278,11 +278,11 @@ const AddCommandFlags = {
 
 export default class Add extends Command {
   static args = {
-    packages: Args.string({description: 'Packages to add', multiple: true, required: true}),
+    packages: Args.string({description: 'Packages to add', required: true}),
   }
+
   static description =
     'Adds zen packages to the directory. Please note than zen never installs with a package manager, You have to manually run your package manager after zen, for automation refer to the script lifecycles of zen.'
-  static examples = ['<%= config.bin %> <%= command.id %>']
   static flags = AddCommandFlags
   static strict = false
 

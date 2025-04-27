@@ -70,7 +70,7 @@ export function RemoveListr(packages: string[]) {
 
 export default class Remove extends Command {
   static args = {
-    packages: Args.string({description: 'Packages to remove', multiple: true, required: true}),
+    packages: Args.string({description: 'Packages to remove', required: true}),
   }
   static description = 'Removes a zen package from the directory'
   static strict = false

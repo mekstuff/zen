@@ -2,7 +2,8 @@ import {Args, Command} from '@oclif/core'
 import {execSync} from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import preferredPM from 'preferred-pm'
+
+const preferredPM = require('preferred-pm')
 
 const installers: Record<string, string> = {
   bun: 'bun install',
