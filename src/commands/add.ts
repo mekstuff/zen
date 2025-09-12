@@ -132,7 +132,7 @@ export const RunAddListr_InstallListrAsync = async (ctx: RunAddListr_InstallList
 /**
  * @param ReadExistingPackageJSONAndAddToContext Sometimes the context may already contain a package.json so there's no need to read it again,
  * However if that's not the case, set this to true so that the package json is read and added to ctx.
- * @param ctx ctx param for `RunAddListr_InstallListrAsync`
+ * @param InstallCtx ctx param for `RunAddListr_InstallListrAsync`
  * @returns Listr object with AddContext
  */
 export function AddListr_InstallListr(
