@@ -25,16 +25,17 @@ type AddContext = {
   resolved_packages_names: {name: string; resolvedName: string; versionWithsemverSymbol: string}[]
 }
 
+export type RunAddListr_InstallListrAsync_ctx = {
+  force_update?: boolean
+  ignore_workspacePathResolves?: boolean
+  packageJSON: package_json_read_file
+}
 /**
  * The main function for AddListr_InstallListr/"pulling"
  * @param ctx The context containing packageJSON.
  * @returns void
  */
-export const RunAddListr_InstallListrAsync = async (ctx: {
-  force_update?: boolean
-  ignore_workspacePathResolves?: boolean
-  packageJSON: package_json_read_file
-}) => {
+export const RunAddListr_InstallListrAsync = async (ctx: RunAddListr_InstallListrAsync_ctx) => {
   if (!ctx.packageJSON) {
     throw 'Missing PackageJSON from context'
   }
@@ -131,10 +132,13 @@ export const RunAddListr_InstallListrAsync = async (ctx: {
 /**
  * @param ReadExistingPackageJSONAndAddToContext Sometimes the context may already contain a package.json so there's no need to read it again,
  * However if that's not the case, set this to true so that the package json is read and added to ctx.
- *
+ * @param ctx ctx param for `RunAddListr_InstallListrAsync`
  * @returns Listr object with AddContext
  */
-export function AddListr_InstallListr(ReadExistingPackageJSONAndAddToContext?: boolean) {
+export function AddListr_InstallListr(
+  ReadExistingPackageJSONAndAddToContext?: boolean,
+  InstallCtx?: Omit<RunAddListr_InstallListrAsync_ctx, 'packageJSON'>,
+) {
   return new Listr<AddContext>([
     {
       skip: !ReadExistingPackageJSONAndAddToContext,
@@ -144,7 +148,10 @@ export function AddListr_InstallListr(ReadExistingPackageJSONAndAddToContext?: b
     },
     {
       task: async (ctx) => {
-        await RunAddListr_InstallListrAsync(ctx)
+        await RunAddListr_InstallListrAsync({
+          ...InstallCtx,
+          ...ctx,
+        })
       },
     },
   ])
