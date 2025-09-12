@@ -11,15 +11,21 @@ export default class Batch extends Command {
   static description = 'Executes the given command in a loop within the current working directory.'
 
   static flags = {
+    dir: Flags.string({
+      aliases: ['d'],
+      default: undefined,
+      description: 'the directory relative to the current working directory.',
+    }),
     warnErrors: Flags.boolean({default: false, description: 'catches any errors and warns them to console.'}),
   }
   public async run(): Promise<void> {
     const {args, flags} = await this.parse(Batch)
-    const readdir = fs.readdirSync(process.cwd())
+    const targetDirPath = flags.dir ? path.join(process.cwd(), flags.dir) : process.cwd()
+    const readdir = fs.readdirSync(targetDirPath)
     readdir.forEach((x, i) => {
-      this.log(`Executing ${i} - "${x}"`)
+      this.log(`Executing (${i}) - "${x}"`)
       try {
-        execSync(args.command, {cwd: path.join(process.cwd(), x), stdio: 'inherit'})
+        execSync(args.command, {cwd: path.join(targetDirPath, x), stdio: 'inherit'})
       } catch (err) {
         if (flags.warnErrors) {
           this.warn(`BATCH ERR [SURPRESSED] :- ${err}`)

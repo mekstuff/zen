@@ -487,39 +487,6 @@ export async function ResolveZenPackagesTree(
     return RequiresPackageManagerInstall.findIndex((tx) => tx.name === x.name && tx.name === x.name) === -1
   })
 
-  /*
-
-  // For hoist-imports support, we data about the .zen/import folder so we can precisely remove packages from it if they're not being used anymore by any package. (So we don't have to add an entire "workspace" field setup)
-  type ZenImportFolderLockData = {
-    usageRecord: Record<string, string[]>
-  }
-  const ZenImportFolderLockDataPath = path.join(zenRootDirectory, '.zen.lock.json')
-  let OldZenImportFolderLockData: ZenImportFolderLockData | undefined = undefined
-  if (fs.existsSync(ZenImportFolderLockDataPath) === true) {
-    OldZenImportFolderLockData = JSON.parse(
-      fs.readFileSync(ZenImportFolderLockDataPath, 'utf-8'),
-    ) as ZenImportFolderLockData
-  }
-  const ZenImportFolderLockData: ZenImportFolderLockData = OldZenImportFolderLockData ?? {
-    usageRecord: {},
-  }
-
-  Tree.forEach(async (item) => {
-    const usageRecordKey = toZenDirectoryImportPackageName(item.name, item.version_resolve)
-    const usageRecordKeyRelPath = path.relative(zenRootDirectory, process.cwd())
-    ZenImportFolderLockData.usageRecord[usageRecordKey] = ZenImportFolderLockData.usageRecord[usageRecordKey] ?? []
-
-    const AlreadyAddedToUsageRecord =
-      ZenImportFolderLockData.usageRecord[usageRecordKey].indexOf(usageRecordKeyRelPath) > -1
-    if (AlreadyAddedToUsageRecord) {
-      return
-    }
-    ZenImportFolderLockData.usageRecord[usageRecordKey].push(usageRecordKeyRelPath)
-  })
-
-  fs.writeFileSync(ZenImportFolderLockDataPath, JSON.stringify(ZenImportFolderLockData, null, 2), 'utf-8')
-  */
-
   const ZEN_DIRECTORY_COMMIT_MESSAGE: string[] = []
   // removing any unwanted packages that are in the `.zen` directory
   if (fs.existsSync(zenRootDirectory)) {
