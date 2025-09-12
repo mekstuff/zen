@@ -5,6 +5,7 @@ import {FromPublishableNameToPublishablePath, ParseToPublishableName} from '../u
 import {HashPackageJsonFileAsync, ReadExistingPackageJSON, package_json_read_file} from '../utils/zen-core'
 import {AddPublishedPackageToGlobalStoreFile, ZENLOCKFILENAME} from '../utils/zen-files'
 import {PackListr} from './pack'
+import {RunStageListr_Stage} from './stage'
 
 import fs = require('fs')
 import path = require('path')
@@ -26,6 +27,16 @@ export default class Publish extends Command {
           task: (ctx) => {
             ctx.packageJSON = ReadExistingPackageJSON({requires_fields: ['name', 'version']})
           },
+        },
+        // Stage to dev --publishing
+        {
+          task: async () => {
+            RunStageListr_Stage({
+              ignore_workspacePathResolves: true,
+              stage: 'development',
+            })
+          },
+          title: 'Running "zen stage dev --publishing"',
         },
         // Pack
         {
@@ -76,6 +87,16 @@ export default class Publish extends Command {
             }
           },
           title: `Copying ${ZENLOCKFILENAME}`,
+        },
+        // Stage back to normal dev
+        {
+          task: async () => {
+            RunStageListr_Stage({
+              ignore_workspacePathResolves: false,
+              stage: 'development',
+            })
+          },
+          title: 'Running "zen stage dev"',
         },
       ],
       {collectErrors: 'full', concurrent: false},

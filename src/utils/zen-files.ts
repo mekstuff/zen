@@ -16,10 +16,10 @@ export type ZenLockFile = {
       _depscope: DependecyScope
       import?: boolean
       signature: string
-      symlinked?: boolean
       traverse_imports?: boolean
       version: string
       version_resolve: string
+      workspace?: boolean
     }
   >
   tree: Record<string, string>

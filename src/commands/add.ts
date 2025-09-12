@@ -3,6 +3,7 @@ import {Listr} from 'listr2'
 
 import {AddAndCommitToGit} from '../utils/git'
 import {ParsePackageString, ParseToPublishableName} from '../utils/parsers'
+import {ReadProjectsZenConfigFilePath} from '../utils/zen-config'
 import {
   DependecyScopes,
   GenerateZenPackagesTree,
@@ -14,6 +15,7 @@ import {
 } from '../utils/zen-core'
 import {GetCompatiableVersionsOfPackageFromGlobalStoreFile} from '../utils/zen-files'
 
+import chalk = require('chalk')
 import path = require('path')
 
 const runScript = require('@npmcli/run-script')
@@ -30,11 +32,19 @@ type AddContext = {
  */
 export const RunAddListr_InstallListrAsync = async (ctx: {
   force_update?: boolean
+  ignore_workspacePathResolves?: boolean
   packageJSON: package_json_read_file
 }) => {
   if (!ctx.packageJSON) {
     throw 'Missing PackageJSON from context'
   }
+
+  const ZenConfig = await ReadProjectsZenConfigFilePath()
+
+  if (ZenConfig !== undefined) {
+    console.log(chalk.cyan(`Using config file - ${ZenConfig.ConfigPath}`))
+  }
+
   const _DEPSCOPES = DependecyScopes
   const _PackgesResolvedToScope: Record<string, (typeof _DEPSCOPES)[number]> = {} // kind of weird but we assign each package to the scope here so after we resolve zen package tree we can know what dependecy scope they belong to.
   const PackagesForTree: zen_package_tree_dependency[] = []
@@ -53,15 +63,17 @@ export const RunAddListr_InstallListrAsync = async (ctx: {
     }
   })
 
-  const [resolvedPackages, removedPackages] = ResolveZenPackagesTree(
-    GenerateZenPackagesTree(PackagesForTree),
+  const [resolvedPackages, removedPackages] = await ResolveZenPackagesTree(
+    GenerateZenPackagesTree(PackagesForTree, ZenConfig),
     process.cwd(),
     ctx.packageJSON,
+    ctx.ignore_workspacePathResolves,
     ctx.force_update,
+    ZenConfig,
   )
 
   const resolvedPackagesThatChanged: string[] = []
-  const localPackagePrefixText = `file:` // the prefix that will be placed at the start of the local path
+  const localPackagePrefixText = `file:` // the prefix that will be placed at the start of the local path (resolvedPackagePathIncludesProtocol can be used to not add it. ~ used by workspace:)
 
   resolvedPackages.forEach((pkg) => {
     const depScope = _PackgesResolvedToScope[pkg.name]
@@ -69,13 +81,17 @@ export const RunAddListr_InstallListrAsync = async (ctx: {
       // if the depscope didn't exist then a change will be made 100%
       resolvedPackagesThatChanged.push(pkg.name)
     } else {
-      if (ctx.packageJSON[depScope]![pkg.name] !== localPackagePrefixText + pkg.resolvedPackagePath) {
+      if (
+        ctx.packageJSON[depScope]![pkg.name] !==
+        (pkg.resolvedPackagePathIncludesProtocol === true ? '' : localPackagePrefixText) + pkg.resolvedPackagePath
+      ) {
         // if the path is not the same then the data will change.
         resolvedPackagesThatChanged.push(pkg.name)
       }
     }
     ctx.packageJSON[depScope] = ctx.packageJSON[depScope] || {}
-    ctx.packageJSON[depScope]![pkg.name] = localPackagePrefixText + pkg.resolvedPackagePath
+    ctx.packageJSON[depScope]![pkg.name] =
+      (pkg.resolvedPackagePathIncludesProtocol === true ? '' : localPackagePrefixText) + pkg.resolvedPackagePath
   })
   WriteExistingPackageJSON({ReadJSON: ctx.packageJSON})
   if (resolvedPackagesThatChanged.length > 0) {
@@ -148,8 +164,8 @@ export function AddListr(
     import?: boolean
     optional?: boolean
     peer?: boolean
-    symlinked?: boolean
     traverse_imports?: boolean
+    workspace?: boolean
   },
 ) {
   return new Listr<AddContext>([
@@ -241,9 +257,9 @@ export function AddListr(
 
           ctx.packageJSON['.zen'][depScope]![resolved.name] = {
             import: options.import,
-            symlinked: options.symlinked,
             traverse_imports: options.traverse_imports,
             version: resolved.versionWithsemverSymbol,
+            workspace: options.workspace,
           }
         })
         task.title = 'Updated .zen dependencies'
@@ -266,13 +282,13 @@ const AddCommandFlags = {
   }),
   optional: Flags.boolean({char: 'O', default: false, description: 'Add as a optionalDependency'}),
   peer: Flags.boolean({char: 'P', default: false, description: 'Add as a peerDependency'}),
-  symlinked: Flags.boolean({
-    default: false,
-  }),
   traverse_imports: Flags.boolean({
     aliases: ['traverse-imports'],
     default: false,
     description: 'Traverse imports ( all dependencies will be imported aswell )',
+  }),
+  workspace: Flags.boolean({
+    default: false,
   }),
 } as const
 
@@ -293,8 +309,8 @@ export default class Add extends Command {
       import: flags.import || undefined,
       optional: flags.optional,
       peer: flags.peer,
-      symlinked: flags.symlinked || undefined,
       traverse_imports: flags.traverse_imports || undefined,
+      workspace: flags.workspace || undefined,
     })
       .run()
       .catch((err) => this.error(err))

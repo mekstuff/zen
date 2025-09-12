@@ -1,9 +1,6 @@
 {
-  "name": "@zen/test1",
+  "name": "zen-cli-monorepo-test-2",
   "version": "1.0.0",
-  "scripts": {
-    "zen": "node ../../../bin/dev.js"
-  },
   ".zen": {
     "dependencies": {}
   },
